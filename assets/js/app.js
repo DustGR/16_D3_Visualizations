@@ -1,12 +1,12 @@
 // @TODO: YOUR CODE HERE!
 //SVG size and margins
-var svgWidth = 800;
-var svgHeight = 600;
+var svgWidth = 900;
+var svgHeight = 800;
 var margin = {
   top: 20,
   right: 20,
-  bottom: 80,
-  left: 20
+  bottom: 100,
+  left: 80
 };
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
@@ -41,8 +41,8 @@ var yLabelList = {
 //widthHeight - width if calculating X axis, height if calculating Y axis
 function scale(data, chosenAxis, widthHeight) {
     var linearScale = d3.scaleLinear()
-        .domain([d3.min(data, sd => sd[chosenAxis]) * 0.8,  //0.8 and 1.2 gives us a buffer from the edges of the chart
-            d3.max(data, sd => sd[chosenAxis]) * 1.2
+        .domain([d3.min(data, sd => sd[chosenAxis]) * 0.9,  //0.8 and 1.2 gives us a buffer from the edges of the chart
+            d3.max(data, sd => sd[chosenAxis]) * 1.1
         ])
       .range([0, widthHeight]);
     return linearScale
@@ -82,30 +82,33 @@ d3.csv('assets/data/data.csv').then(d=>{
         .classed("stateCircle", true)
         .attr("text-anchor", "middle")
         .attr("alignment-baseline", "middle")
+        .attr("transform", 'translate(0, 1)')
     
     var xLabelGroup = chart.append("g")
         .attr("transform", `translate(0, ${height})`)
-        .attr("id","xLabelGroup");
+        .attr("id","xLabelGroup")
+        .attr("width", width);
     var yLabelGroup = chart.append("g")
-        .attr("transform", `translate(80, 0)`)
+        .attr("transform", `translate(${svgWidth-width}, 0)`)
         .attr("id","yLabelGroup")
 
 //    Populate X axis labels
     let xLabelOffset = 30
     Object.entries(xLabelList).forEach(([key,value])=>{
         xLabelGroup
-        .append("text")
-        .text(value)
-        .attr("value", key)
-        .attr("text-anchor", "middle")
-        .attr("alignment-baseline", "middle")
-        .classed("inactive x-axis", true)
-        .attr('transform', `translate(${width/2}, ${xLabelOffset})`);
-        xLabelOffset += 20
-    })
+            .append("text")
+            .text(value)
+            .attr("value", key)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .classed("inactive x-axis", true)
+            .attr('transform', `translate(${width/2}, ${xLabelOffset})`);
+            xLabelOffset += 20
+    });
+    xAxisLabels = xLabelGroup.selectAll(".x-axis");
 
     //Populate Y axis labels
-    let yLabelOffset = -30
+    let yLabelOffset = -30;
     Object.entries(yLabelList).forEach(([key,value])=>{
         yLabelGroup
         .append("text")
@@ -118,7 +121,8 @@ d3.csv('assets/data/data.csv').then(d=>{
         .attr('y', 0 - yLabelOffset)
         .attr('transform', `rotate(90)`);
         yLabelOffset -= 20
-    })
+    });
+    yAxisLabels = yLabelGroup.selectAll(".y-axis");
 
     //Highlights active axes, unhighlights inactive axes
     function setAxes(xAxis, yAxis) {
@@ -127,11 +131,11 @@ d3.csv('assets/data/data.csv').then(d=>{
         var bottomAxis = d3.axisBottom(xScale)
         var leftAxis = d3.axisLeft(yScale)
 
-        xLabelGroup.selectAll("text")
+        xAxisLabels
             .classed("inactive", true)
             .classed("active", false)
 
-        yLabelGroup.selectAll("text")
+        yAxisLabels
             .classed("inactive", true)
             .classed("active", false)        
 
@@ -180,7 +184,7 @@ d3.csv('assets/data/data.csv').then(d=>{
 
     setAxes(chosenX, chosenY)
 
-    xLabelGroup.selectAll("text")
+    xAxisLabels
         .on("click", function(){
             let value = d3.select(this).attr("value");
             if (value !== chosenX) {
@@ -189,7 +193,7 @@ d3.csv('assets/data/data.csv').then(d=>{
             }
         })
     
-    yLabelGroup.selectAll("text")
+    yAxisLabels
         .on("click", function(){
             let value = d3.select(this).attr("value");
             if (value !== chosenY) {
@@ -197,9 +201,5 @@ d3.csv('assets/data/data.csv').then(d=>{
                 chosenY = value
             }
         })
-
-
-
-
 })
 
