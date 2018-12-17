@@ -1,12 +1,12 @@
 // @TODO: YOUR CODE HERE!
 //SVG size and margins
-var svgWidth = 900;
-var svgHeight = 800;
+var svgWidth = 800;
+var svgHeight = 600;
 var margin = {
-  top: 20,
-  right: 20,
-  bottom: 100,
-  left: 80
+    top: 20,
+    right: 20,
+    bottom: 100,
+    left: 80
 };
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
@@ -19,43 +19,47 @@ var chart = d3.select("#scatter")
 var chartGroup = chart.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    //declare starting axes to graph
+//declare starting axes to graph
 var chosenX = 'age'
 var chosenY = 'smokes'
-    //all possible axes, for later controls
+//all possible axes, for later controls
 var xLabelList = {
-    'poverty' : 'In Poverty (%)', 
-    'age' : 'Age (median)', 
-    'income' : 'Household Income (median)'
-    }
+    'poverty': 'In Poverty (%)',
+    'age': 'Age (median)',
+    'income': 'Household Income (median)'
+}
 var yLabelList = {
-    'healthcare' : 'Lacks Healthcare (%)', 
-    'obesity' : 'Obesity (%)', 
-    'smokes' : 'Smokes (%)'
-}    
+    'healthcare': 'Lacks Healthcare (%)',
+    'obesity': 'Obesity (%)',
+    'smokes': 'Smokes (%)'
+}
 
 
 //function Scale to scale either axis, pass width or height for third argument to change axis
 //data - data array to scale
 //chosenAxis - chosen X or Y axis
 //widthHeight - width if calculating X axis, height if calculating Y axis
-function scale(data, chosenAxis, widthHeight) {
+function scale(data, chosenAxis, dir) {
+    let r = [0, width]
+    if (dir === height) {
+        r = [height, 0]
+    }
     var linearScale = d3.scaleLinear()
         .domain([d3.min(data, sd => sd[chosenAxis]) * 0.9,  //0.8 and 1.2 gives us a buffer from the edges of the chart
-            d3.max(data, sd => sd[chosenAxis]) * 1.1
+        d3.max(data, sd => sd[chosenAxis]) * 1.1
         ])
-      .range([0, widthHeight]);
+        .range(r);
     return linearScale
 }
 
 
-d3.csv('assets/data/data.csv').then(d=>{
-    d.forEach(obj=>{
-        Object.keys(obj).forEach(key =>{
+d3.csv('assets/data/data.csv').then(d => {
+    d.forEach(obj => {
+        Object.keys(obj).forEach(key => {
             if (!isNaN(obj[key])) {    //Converts values to numbers
                 obj[key] = +obj[key]
             }
-         })
+        })
     })
     let xScale = scale(d, chosenX, width)
     let yScale = scale(d, chosenY, height)
@@ -65,62 +69,63 @@ d3.csv('assets/data/data.csv').then(d=>{
         .data(d)
         .enter()
         .append("circle")
-        .attr("r", "1.5%")
+        .attr("r", "1%")
         .attr("fill", "blue")
-        .attr("opacity", ".5")
-        .attr("cx", x=>xScale(x[chosenX]))
-        .attr("cy", y=>yScale(y[chosenY]))
+        .attr("opacity", ".9")
+        .classed("stateCircle", true)
+        .attr("cx", x => xScale(x[chosenX]))
+        .attr("cy", y => yScale(y[chosenY]))
 
     //add state abbreviation labels
     var stateAbbrev = chartGroup.selectAll("text")
         .data(d)
         .enter()
         .append("text")
-        .text(t=>t.abbr)
-        .attr("x", x=>xScale(x[chosenX]))
-        .attr("y", y=>yScale(y[chosenY]))
-        .classed("stateCircle", true)
+        .text(t => t.abbr)
+        .attr("x", x => xScale(x[chosenX]))
+        .attr("y", y => yScale(y[chosenY]))
+        .classed('stateText', true)
         .attr("text-anchor", "middle")
         .attr("alignment-baseline", "middle")
         .attr("transform", 'translate(0, 1)')
-    
-    var xLabelGroup = chart.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .attr("id","xLabelGroup")
-        .attr("width", width);
-    var yLabelGroup = chart.append("g")
-        .attr("transform", `translate(${svgWidth-width}, 0)`)
-        .attr("id","yLabelGroup")
+        .attr('font-size', svgWidth*0.01)
 
-//    Populate X axis labels
+    var xLabelGroup = chartGroup.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .attr("id", "xLabelGroup")
+        .attr("width", width);
+    var yLabelGroup = chartGroup.append("g")
+        .attr("id", "yLabelGroup")
+
+    //    Populate X axis labels
     let xLabelOffset = 30
-    Object.entries(xLabelList).forEach(([key,value])=>{
+    Object.entries(xLabelList).forEach(([key, value]) => {
         xLabelGroup
             .append("text")
             .text(value)
             .attr("value", key)
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "middle")
-            .classed("inactive x-axis", true)
-            .attr('transform', `translate(${width/2}, ${xLabelOffset})`);
-            xLabelOffset += 20
+            .classed("inactive x-axis axis-text", true)
+            .attr('transform', `translate(${width / 2}, ${xLabelOffset})`);
+        xLabelOffset += 15
     });
     xAxisLabels = xLabelGroup.selectAll(".x-axis");
 
     //Populate Y axis labels
-    let yLabelOffset = -30;
-    Object.entries(yLabelList).forEach(([key,value])=>{
+    let yLabelOffset = -120;
+    Object.entries(yLabelList).forEach(([key, value]) => {
         yLabelGroup
-        .append("text")
-        .text(value)
-        .attr("value", key)
-        .attr("text-anchor", "middle")
-        .attr("alignment-baseline", "middle")
-        .classed("inactive y-axis", true)
-        .attr('x', (height/2))
-        .attr('y', 0 - yLabelOffset)
-        .attr('transform', `rotate(90)`);
-        yLabelOffset -= 20
+            .append("text")
+            .text(value)
+            .attr("value", key)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .classed("inactive y-axis", true)
+            .attr('x', 0-(height / 2))
+            .attr('y', margin.left + yLabelOffset)
+            .attr('transform', `rotate(-90)`);
+        yLabelOffset -= 15
     });
     yAxisLabels = yLabelGroup.selectAll(".y-axis");
 
@@ -137,7 +142,7 @@ d3.csv('assets/data/data.csv').then(d=>{
 
         yAxisLabels
             .classed("inactive", true)
-            .classed("active", false)        
+            .classed("active", false)
 
         xLabelGroup.selectAll(`[value=${xAxis}]`)
             .classed("inactive", false)
@@ -154,8 +159,35 @@ d3.csv('assets/data/data.csv').then(d=>{
         yLabelGroup.transition()
             .duration(1000)
             .call(leftAxis)
+
+        updateToolTip(xAxis, yAxis)
     }
-    
+    //Adds or updates Tool Tip
+    function updateToolTip(X, Y) {
+        var toolTip = d3.tip()
+            .attr('class', 'tooltip')
+            .offset([-10, 60])
+            .html(dat => {
+                return `${dat.state}<br>${xLabelList[X]}: ${dat[X]} <br> ${yLabelList[Y]}: ${dat[Y]}`;
+            });
+
+        pointGroup.call(toolTip);
+        stateAbbrev.call(toolTip);
+        
+        pointGroup.on("mouseover", function(data) {
+            toolTip.show(data, this);
+        });
+        stateAbbrev.on("mouseover", function(data) {
+            toolTip.show(data, this);
+        });
+        pointGroup.on("mouseout", function(data) {
+            toolTip.hide(data, this);
+        });
+        stateAbbrev.on("mouseout", function(data) {
+            toolTip.hide(data, this);
+        });
+    }
+
     function axisTransition(newX, newY) {
         let newXScale = scale(d, newX, width)
         let newYScale = scale(d, newY, height)
@@ -163,38 +195,40 @@ d3.csv('assets/data/data.csv').then(d=>{
             //Transitions X axis 
             pointGroup.transition()
                 .duration(1000)
-                .attr('cx', d=> newXScale(d[newX]));
+                .attr('cx', d => newXScale(d[newX]));
 
             stateAbbrev.transition()
                 .duration(1000)
-                .attr('x', d=> newXScale(d[newX]));
+                .attr('x', d => newXScale(d[newX]));
         }
-            //Transitions Y axis
+        //Transitions Y axis
         if (newY !== chosenY) {
             pointGroup.transition()
                 .duration(1000)
-                .attr('cy', d=> newYScale(d[newY]))
+                .attr('cy', d => newYScale(d[newY]))
 
             stateAbbrev.transition()
                 .duration(1000)
-                .attr('y', d=> newYScale(d[newY]));
+                .attr('y', d => newYScale(d[newY]));
         }
         setAxes(newX, newY)
+        updateToolTip(newX, newY)
     }
 
-    setAxes(chosenX, chosenY)
+    setAxes(chosenX, chosenY);
+
 
     xAxisLabels
-        .on("click", function(){
+        .on("click", function () {
             let value = d3.select(this).attr("value");
             if (value !== chosenX) {
                 axisTransition(value, chosenY);
                 chosenX = value
             }
         })
-    
+
     yAxisLabels
-        .on("click", function(){
+        .on("click", function () {
             let value = d3.select(this).attr("value");
             if (value !== chosenY) {
                 axisTransition(chosenX, value);
