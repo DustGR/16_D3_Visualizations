@@ -20,7 +20,7 @@ var chartGroup = chart.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //declare starting axes to graph
-var chosenX = 'age'
+var chosenX = 'income'
 var chosenY = 'smokes'
 //all possible axes, for later controls
 var xLabelList = {
